@@ -70,7 +70,7 @@ def converter():
             result = value_in_bytes / FACTORS_IN_BYTES[to_unit]
             
             print("\n--- Result ---")
-            print(f"{value:,.6f} {from_unit} = {result:,.6f} {to_unit}")
+            print(f"{value:,.12g} {from_unit} = {result:,.12g} {to_unit}")
             print("-" * 25)
 
         except Exception as e:
