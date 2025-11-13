@@ -16,7 +16,7 @@ def fahrenheit_to_celsius(f: float) -> float:
 
 
 def main() -> None:
-    print("🌡️ Temperature Converter")
+    print("Temperature Converter")
     print("--------------------------")
     print("1. Celsius → Fahrenheit")
     print("2. Fahrenheit → Celsius")
