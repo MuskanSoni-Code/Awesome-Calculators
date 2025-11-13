@@ -28,10 +28,10 @@ All valid calculators will be reviewed and merged 💫
 ---
 
 ## 🧰 Example Projects
-- `SimpleCalculator-C/` → Basic arithmetic calculator (C)
-- `SimpleCalculator-Java/` → Basic arithmetic calculator (Java) (Yep, you can re-create with another language)
-- `ScientificCalculator-Python/` → Handles trigonometric and logarithmic functions  
-- `GraphingCalculator-JS/` → Web-based interactive calculator  
+- `SimpleCalculator-C-B3rou/` → Basic arithmetic calculator (C)
+- `SimpleCalculator-Java-B3rou/` → Basic arithmetic calculator (Java) (Yep, you can re-create with another language)
+- `ScientificCalculator-Python-B3rou/` → Handles trigonometric and logarithmic functions  
+- `GraphingCalculator-JS-B3rou/` → Web-based interactive calculator  
 
 ---
 
