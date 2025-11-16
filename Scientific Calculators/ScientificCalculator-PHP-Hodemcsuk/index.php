@@ -75,40 +75,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($expression)) {
                     <button type="button" class="btn function" onclick="appendToExpr('cos(')">cos</button>
                     <button type="button" class="btn function" onclick="appendToExpr('tan(')">tan</button>
                     <button type="button" class="btn function" onclick="appendToExpr('cot(')">cot</button>
-
-                    <button type="button" class="btn function" onclick="appendToExpr('log(')">log</button>
-                    <button type="button" class="btn function" onclick="appendToExpr('ln(')">ln</button>
-                    <button type="button" class="btn function" onclick="appendToExpr('exp(')">exp</button>
                     <button type="button" class="btn function" onclick="appendToExpr('sqrt(')">√</button>
 
+                    <button type="button" class="btn function" onclick="appendToExpr('log(')">log</button>
+                    <button type="button" class="btn function" onclick="insertLogb()">log<sub>b</sub></button>
+                    <button type="button" class="btn function" onclick="appendToExpr('ln(')">ln</button>
+                    <button type="button" class="btn function" onclick="appendToExpr('exp(')">exp</button>
                     <button type="button" class="btn function" onclick="appendToExpr('^')">x^y</button>
+
                     <button type="button" class="btn function" onclick="appendToExpr('!')">n!</button>
                     <button type="button" class="btn function" onclick="appendToExpr('pi')">π</button>
                     <button type="button" class="btn function" onclick="appendToExpr('e')">e</button>
-
                     <button type="button" class="btn function" onclick="appendToExpr('(')">(</button>
                     <button type="button" class="btn function" onclick="appendToExpr(')')">)</button>
-                    <button type="button" class="btn clear" onclick="clearExpr()">C</button>
-                    <button type="button" class="btn backspace" onclick="backspace()">⌫</button>
 
                     <button type="button" class="btn number" onclick="appendToExpr('7')">7</button>
                     <button type="button" class="btn number" onclick="appendToExpr('8')">8</button>
                     <button type="button" class="btn number" onclick="appendToExpr('9')">9</button>
                     <button type="button" class="btn operator" onclick="appendToExpr('/')">÷</button>
+                    <button type="button" class="btn clear" onclick="clearExpr()">C</button>
 
                     <button type="button" class="btn number" onclick="appendToExpr('4')">4</button>
                     <button type="button" class="btn number" onclick="appendToExpr('5')">5</button>
                     <button type="button" class="btn number" onclick="appendToExpr('6')">6</button>
                     <button type="button" class="btn operator" onclick="appendToExpr('*')">×</button>
+                    <button type="button" class="btn backspace" onclick="backspace()">⌫</button>
 
                     <button type="button" class="btn number" onclick="appendToExpr('1')">1</button>
                     <button type="button" class="btn number" onclick="appendToExpr('2')">2</button>
                     <button type="button" class="btn number" onclick="appendToExpr('3')">3</button>
                     <button type="button" class="btn operator" onclick="appendToExpr('-')">−</button>
+                    <button type="submit" class="btn equals tall">=</button>
 
                     <button type="button" class="btn number" onclick="appendToExpr('0')">0</button>
                     <button type="button" class="btn number" onclick="appendToExpr('.')">.</button>
-                    <button type="submit" class="btn equals">=</button>
+                    <button type="button" class="btn number" onclick="appendToExpr('00')">00</button>
                     <button type="button" class="btn operator" onclick="appendToExpr('+')">+</button>
                 </div>
             </form>
@@ -118,6 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($expression)) {
             <h3>Examples</h3>
             <code>sin(90) + cos(0)</code>
             <code>log(100) * 5</code>
+            <code>logb(2, 8)</code>
             <code>sqrt(16) + 2^3</code>
             <code>5! / 10</code>
             <code>ln(e) + pi</code>
@@ -139,6 +141,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($expression)) {
 
         function backspace() {
             exprInput.value = exprInput.value.slice(0, -1);
+            exprInput.focus();
+        }
+
+        function insertLogb() {
+            const cursorPos = exprInput.selectionStart;
+            const textBefore = exprInput.value.substring(0, cursorPos);
+            const textAfter = exprInput.value.substring(cursorPos);
+
+            exprInput.value = textBefore + 'logb(,)' + textAfter;
+            // Position cursor between the comma and closing paren (at the base position)
+            const newPos = cursorPos + 5; // After 'logb('
+            exprInput.setSelectionRange(newPos, newPos);
             exprInput.focus();
         }
 

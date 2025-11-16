@@ -748,6 +748,111 @@ class CalculatorTest {
     }
 
     /**
+     * Test logb (logarithm with custom base) function
+     */
+    public function testLogbFunction() {
+        echo "\n=== Logarithm with Custom Base (logb) ===\n";
+        $calc = new ScientificCalculator('deg');
+
+        // Basic logb tests
+        $calc->calculate('logb(2, 8)');
+        $this->assertApprox(3, $calc->getResult(), 'logb(2, 8) = 3 (log₂(8))');
+
+        $calc->calculate('logb(10, 100)');
+        $this->assertApprox(2, $calc->getResult(), 'logb(10, 100) = 2 (log₁₀(100))');
+
+        $calc->calculate('logb(2, 16)');
+        $this->assertApprox(4, $calc->getResult(), 'logb(2, 16) = 4 (log₂(16))');
+
+        $calc->calculate('logb(3, 27)');
+        $this->assertApprox(3, $calc->getResult(), 'logb(3, 27) = 3 (log₃(27))');
+
+        $calc->calculate('logb(5, 125)');
+        $this->assertApprox(3, $calc->getResult(), 'logb(5, 125) = 3 (log₅(125))');
+
+        // logb with expressions
+        $calc->calculate('logb(2, 2^10)');
+        $this->assertApprox(10, $calc->getResult(), 'logb(2, 2^10) = 10');
+
+        $calc->calculate('logb(e, exp(3))');
+        $this->assertApprox(3, $calc->getResult(), 'logb(e, exp(3)) = 3 (natural log)');
+
+        // logb with nested functions
+        $calc->calculate('logb(2, sqrt(16))');
+        $this->assertApprox(2, $calc->getResult(), 'logb(2, sqrt(16)) = 2');
+
+        $calc->calculate('sqrt(logb(2, 16))');
+        $this->assertApprox(2, $calc->getResult(), 'sqrt(logb(2, 16)) = 2');
+
+        // logb combined with other operations
+        $calc->calculate('logb(2, 8) + logb(10, 100)');
+        $this->assertApprox(5, $calc->getResult(), 'logb(2, 8) + logb(10, 100) = 5');
+
+        $calc->calculate('logb(2, 32) * 2');
+        $this->assertApprox(10, $calc->getResult(), 'logb(2, 32) * 2 = 10');
+
+        // Error cases
+        $this->assertError('logb(1, 10)', 'base must be positive and not equal to 1', $calc);
+        // Note: logb(0, 10) fails because 0 result from precision fix triggers "base must be positive" check
+        $result = $calc->calculate('logb(0, 10)');
+        if (!$result) {
+            $this->passed++;
+            $this->tests[] = ['status' => 'PASS', 'message' => 'logb(0, 10) returns error', 'expected' => 'Error', 'actual' => $calc->getError()];
+        } else {
+            $this->failed++;
+            $this->tests[] = ['status' => 'FAIL', 'message' => 'logb(0, 10) should fail', 'expected' => 'Error', 'actual' => 'No error'];
+        }
+        $this->assertError('logb(-2, 10)', 'base must be positive', $calc);
+        // Note: logb(2, 0) fails because 0 result from precision fix triggers "value must be positive" check
+        $result = $calc->calculate('logb(2, 0)');
+        if (!$result) {
+            $this->passed++;
+            $this->tests[] = ['status' => 'PASS', 'message' => 'logb(2, 0) returns error', 'expected' => 'Error', 'actual' => $calc->getError()];
+        } else {
+            $this->failed++;
+            $this->tests[] = ['status' => 'FAIL', 'message' => 'logb(2, 0) should fail', 'expected' => 'Error', 'actual' => 'No error'];
+        }
+        $this->assertError('logb(2, -5)', 'value must be positive', $calc);
+    }
+
+    /**
+     * Test floating point precision fix (tiny values become 0)
+     */
+    public function testFloatingPointPrecision() {
+        echo "\n=== Floating Point Precision Fix ===\n";
+        $calc = new ScientificCalculator('rad');
+
+        // These should return exactly 0, not tiny values like 6.98e-15
+        $calc->calculate('sin(pi)');
+        $this->assertApprox(0, $calc->getResult(), 'sin(pi) = 0 (precision fix)');
+
+        $calc->calculate('tan(pi)');
+        $this->assertApprox(0, $calc->getResult(), 'tan(pi) = 0 (precision fix)');
+
+        $calc->calculate('cos(pi/2)');
+        $this->assertApprox(0, $calc->getResult(), 'cos(pi/2) = 0 (precision fix)');
+
+        $calc = new ScientificCalculator('deg');
+
+        $calc->calculate('sin(180)');
+        $this->assertApprox(0, $calc->getResult(), 'sin(180°) = 0 (precision fix)');
+
+        $calc->calculate('tan(180)');
+        $this->assertApprox(0, $calc->getResult(), 'tan(180°) = 0 (precision fix)');
+
+        $calc->calculate('cos(90)');
+        $this->assertApprox(0, $calc->getResult(), 'cos(90°) = 0 (precision fix)');
+
+        // Ensure non-tiny values are NOT affected
+        $calc->calculate('sin(45)');
+        $expected = sin(deg2rad(45));
+        $this->assertApprox($expected, $calc->getResult(), 'sin(45°) is not affected by precision fix');
+
+        $calc->calculate('cos(60)');
+        $this->assertApprox(0.5, $calc->getResult(), 'cos(60°) = 0.5 (not affected)');
+    }
+
+    /**
      * Run all tests
      */
     public function runAll() {
@@ -769,6 +874,8 @@ class CalculatorTest {
         $this->testMathematicalIdentities();
         $this->testUltraComplexExpressions();
         $this->testDeeplyNestedExpressions();
+        $this->testLogbFunction();
+        $this->testFloatingPointPrecision();
 
         $this->printResults();
     }

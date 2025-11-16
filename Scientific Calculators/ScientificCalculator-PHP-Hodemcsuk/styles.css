@@ -98,7 +98,7 @@ body {
 
 .buttons {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 1px;
     background: #0d1b2a;
     padding: 1px;
@@ -183,6 +183,14 @@ body {
 
 .btn.equals:hover {
     background: #10b981;
+}
+
+.btn.tall {
+    grid-row: span 2;
+}
+
+.btn.wide {
+    grid-column: span 2;
 }
 
 .btn.zero {

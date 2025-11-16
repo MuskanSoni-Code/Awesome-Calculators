@@ -78,7 +78,8 @@ class ScientificCalculator {
         }, $expr);
 
         // Process scientific functions iteratively (from innermost to outermost)
-        $functions = ['sin', 'cos', 'tan', 'cot', 'log', 'ln', 'exp', 'sqrt'];
+        // Note: logb must come before log to avoid partial matching
+        $functions = ['sin', 'cos', 'tan', 'cot', 'logb', 'log', 'ln', 'exp', 'sqrt'];
         $maxIterations = 500;
         $iteration = 0;
 
@@ -100,6 +101,13 @@ class ScientificCalculator {
                     if ($innerContent !== null) {
                         $found = true;
                         $fullMatch = $func . '(' . $innerContent . ')';
+
+                        // Special handling for logb (two parameters)
+                        if ($func === 'logb') {
+                            $result = $this->evaluateLogb($innerContent);
+                            $expr = str_replace($fullMatch, '(' . $result . ')', $expr);
+                            break;
+                        }
 
                         // Check if inner content contains functions - if so, evaluate recursively
                         $hasNestedFunc = false;
@@ -162,6 +170,57 @@ class ScientificCalculator {
         $expr = preg_replace('/(?<![a-zA-Z0-9])e(?!xp)(?![0-9])/', '(' . M_E . ')', $expr);
 
         return $expr;
+    }
+
+    /**
+     * Evaluate logb(base, value) - logarithm with custom base
+     * @param string $innerContent The content inside logb(), e.g., "2, 8"
+     * @return float Result of log_base(value)
+     * @throws Exception If parameters are invalid
+     */
+    private function evaluateLogb($innerContent) {
+        // Find the comma that separates base and value (accounting for nested parentheses)
+        $depth = 0;
+        $commaPos = -1;
+
+        for ($i = 0; $i < strlen($innerContent); $i++) {
+            $char = $innerContent[$i];
+            if ($char === '(') {
+                $depth++;
+            } elseif ($char === ')') {
+                $depth--;
+            } elseif ($char === ',' && $depth === 0) {
+                $commaPos = $i;
+                break;
+            }
+        }
+
+        if ($commaPos === -1) {
+            throw new Exception("logb() requires two parameters: logb(base, value)");
+        }
+
+        $baseExpr = trim(substr($innerContent, 0, $commaPos));
+        $valueExpr = trim(substr($innerContent, $commaPos + 1));
+
+        // Use strlen instead of empty because empty('0') returns true in PHP
+        if (strlen($baseExpr) === 0 || strlen($valueExpr) === 0) {
+            throw new Exception("logb() requires two parameters: logb(base, value)");
+        }
+
+        // Evaluate base and value expressions
+        $baseValue = $this->evaluateExpression($baseExpr);
+        $valueValue = $this->evaluateExpression($valueExpr);
+
+        // Validate
+        if ($baseValue <= 0 || $baseValue == 1) {
+            throw new Exception("logb() base must be positive and not equal to 1");
+        }
+        if ($valueValue <= 0) {
+            throw new Exception("logb() value must be positive");
+        }
+
+        // Calculate log_base(value) = ln(value) / ln(base)
+        return log($valueValue) / log($baseValue);
     }
 
     /**
@@ -356,6 +415,12 @@ class ScientificCalculator {
     public function calculate($expression) {
         try {
             $this->result = $this->evaluateExpression($expression);
+
+            // Fix floating point precision errors (e.g., tan(pi) = 6.98e-15 should be 0)
+            if (abs($this->result) < 1e-10) {
+                $this->result = 0;
+            }
+
             $this->error = null;
             return true;
         } catch (Exception $e) {

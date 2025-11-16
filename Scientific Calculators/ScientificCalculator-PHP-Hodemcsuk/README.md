@@ -5,13 +5,15 @@ A comprehensive server-side scientific calculator with Material Design UI, suppo
 ## Features
 
 - **Trigonometric Functions**: sin, cos, tan, cot (with DEG/RAD mode)
-- **Logarithmic Functions**: log (base 10), ln (natural log)
+- **Logarithmic Functions**: log (base 10), ln (natural log), logb (custom base)
 - **Exponential & Root Functions**: exp, sqrt, power (^)
 - **Factorial**: n! notation
 - **Mathematical Constants**: π (pi), e (Euler's number)
 - **Combined Expressions**: Parse and evaluate complex mathematical expressions
 - **Input Validation**: Comprehensive error handling and syntax validation
 - **Deep Nesting Support**: Up to 20+ levels of nested functions
+- **Floating Point Precision**: Automatic fix for tiny values (e.g., tan(pi) → 0 instead of 6.98e-15)
+- **Hover Dropdowns**: UI buttons with expandable options (log → log₁₀ or logb)
 
 ## Requirements
 
@@ -52,7 +54,7 @@ ScientificCalculator-PHP-Hodemcsuk/
 ├── README.md          # This file
 ├── issue.md           # Original issue requirements
 └── tests/
-    ├── CalculatorTest.php  # Comprehensive test suite (140+ tests)
+    ├── CalculatorTest.php  # Comprehensive test suite (164 tests)
     ├── run_tests.php       # Test runner
     └── README.md           # Test documentation
 ```
@@ -95,9 +97,21 @@ echo $calc->getResult(); // 120
 $calc->calculate('e^pi');
 echo $calc->getResult(); // 23.140692632779
 
+// Logarithm with custom base
+$calc->calculate('logb(2, 8)'); // log₂(8) = 3
+echo $calc->getResult(); // 3
+
+$calc->calculate('logb(10, 1000)'); // log₁₀(1000) = 3
+echo $calc->getResult(); // 3
+
 // Nested functions (up to 20+ levels)
 $calc->calculate('sqrt(sqrt(sqrt(sqrt(65536))))');
 echo $calc->getResult(); // 2
+
+// Precision fix: tiny values automatically become 0
+$calc = new ScientificCalculator('rad');
+$calc->calculate('tan(pi)'); // Would be 6.98e-15, but returns 0
+echo $calc->getResult(); // 0
 ```
 
 ### REST API Integration
@@ -142,6 +156,7 @@ curl "http://localhost:8000/api.php?expr=sin(45)%2Bcos(45)&mode=deg"
 | tan | `tan(x)` | Tangent (DEG/RAD) | `tan(45)` → 1 |
 | cot | `cot(x)` | Cotangent (DEG/RAD) | `cot(45)` → 1 |
 | log | `log(x)` | Logarithm base 10 | `log(100)` → 2 |
+| logb | `logb(base, x)` | Logarithm with custom base | `logb(2, 8)` → 3 |
 | ln | `ln(x)` | Natural logarithm | `ln(e)` → 1 |
 | exp | `exp(x)` | Exponential (e^x) | `exp(1)` → 2.718... |
 | sqrt | `sqrt(x)` | Square root | `sqrt(16)` → 4 |
@@ -167,6 +182,8 @@ sin(90)                    → 1
 cos(0)                     → 1
 tan(45)                    → 1
 log(1000)                  → 3
+logb(2, 8)                 → 3 (log₂(8))
+logb(5, 125)               → 3 (log₅(125))
 ln(e^2)                    → 2
 sqrt(16)                   → 4
 5!                         → 120
@@ -178,6 +195,7 @@ sqrt(16)                   → 4
 sin(30) + cos(60)          → 1
 (sin(45))^2 + (cos(45))^2  → 1
 log(2) + log(5)            → 1
+logb(2, 8) + logb(10, 100) → 5
 sqrt(3^2 + 4^2)            → 5
 10! / (3! * 7!)            → 120
 ```
@@ -254,6 +272,11 @@ sqrt(3^2 + 4^2)            → 5
 - Tested up to 20 levels of nesting successfully
 - Deep nesting may cause performance slowdown
 
+9. **Precision Threshold**: Results with absolute value < 1e-10 are rounded to 0
+   - This fixes floating point errors (e.g., tan(pi) = 0 instead of 6.98e-15)
+   - ⚠️ Very small legitimate results will also become 0
+   - For precision-critical work with tiny values, be aware of this threshold
+
 ### Angle Modes
 
 - **DEG mode**: Angles interpreted as degrees (0-360)
@@ -285,10 +308,11 @@ cd ScientificCalculator-PHP-Hodemcsuk
 php tests/run_tests.php
 ```
 
-The test suite includes 140+ tests covering:
+The test suite includes 164 tests covering:
 - All trigonometric functions (DEG & RAD)
-- Logarithmic functions
+- Logarithmic functions (including logb)
 - Exponential and root functions
+- Floating point precision edge cases
 - Factorial calculations
 - Combined expressions
 - Mathematical constants
@@ -342,3 +366,16 @@ Open source - feel free to use and modify.
 - Increased nesting depth (500 iterations)
 - Added deeply nested expression tests
 - Total: 140 tests passing
+
+### v1.2.0
+- **Floating Point Precision Fix**: Values smaller than 1e-10 are automatically rounded to 0
+  - `tan(pi)` now returns `0` instead of `6.98e-15`
+  - `sin(180)` in DEG mode returns `0` instead of tiny float
+- **Custom Base Logarithm**: Added `logb(base, value)` function
+  - `logb(2, 8)` → 3
+  - `logb(10, 100)` → 2
+  - Supports nested expressions in both parameters
+- **Hover Dropdown UI**: Interactive dropdowns on log and parenthesis buttons
+  - Log button expands to show: log₁₀ or logb
+  - Parenthesis button expands to show: ( or )
+- Comprehensive test coverage: 164 tests passing
